@@ -1,0 +1,476 @@
+<!-- Blue band at the top -->
+<div style="width:100%; height:20px; background-color:#004e96;"></div>
+<div style="width:100%; height:7px; background-color:#FAA61A;"></div>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ICAR Sample Form</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .form-container { max-width: 980px; margin: auto; }
+    .form-row { display: flex; margin-bottom: 12px; align-items: center; }
+    .form-row label { flex: 0 0 40%; font-weight: bold; text-align: left; padding-right: 10px; }
+    .form-row select, .form-row input { flex: 1; padding: 8px; }
+    .form-row input[readonly] { background: #f5f5f5; }
+    button { display: block; margin: 20px auto; padding: 12px 25px; font-size: 16px; font-weight: bold; background-color: #4CAF50; color: #fff; border: none; border-radius: 6px; cursor: pointer; }
+    button[disabled] { opacity: 0.6; cursor: not-allowed; }
+    button:hover:not([disabled]) { background-color: #45a049; }
+    .note { font-size: 13px; color: #555; text-align: center; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>ICAR Sample Form</h2>
+    <div class="note">Select a Service — relevant fields will appear on the right. Amount and Total (incl. GST) are auto-calculated.</div>
+
+    <!-- Service -->
+    <div class="form-row">
+      <label for="service">Service</label>
+      <select id="service">
+        <option value="">-- Select Service --</option>
+        <option value="1">Handling and processing of germplasm for supply with MTA</option>
+        <option value="2">Import Permit issuance</option>
+        <option value="3">Handling and processing for release of imported germplasm</option>
+        <option value="4">Quarantine processing of imported germplasm</option>
+        <option value="5">Phytosanitary Certificate issuance</option>
+        <option value="6">Quarantine processing for Export</option>
+        <option value="7">Quarantine processing of material received from DPPQ&amp;S</option>
+        <option value="8">PEQ facility certification</option>
+        <option value="9">Quarantine processing of international nurseries/trial entries</option>
+        <option value="10">DNA fingerprinting and GM testing</option>
+        <option value="11">Issuance of Authentication Certificate for taxonomic identification of herbarium specimen</option>
+        <option value="12">Visit to ICAR-NBPGR facilities</option>
+      </select>
+    </div>
+
+    <!-- Field 2 (dynamic) -->
+    <div class="form-row" id="field2-row" style="display:none;">
+      <label id="field2-label"></label>
+      <select id="field2"></select>
+    </div>
+
+    <!-- Field 3 (Nature of material) -->
+    <div class="form-row" id="field3-row" style="display:none;">
+      <label for="field3">Nature of material</label>
+      <select id="field3">
+        <option value="">--Select--</option>
+        <option value="Non-Transgenic">Non-Transgenic</option>
+        <option value="Transgenic">Transgenic</option>
+      </select>
+    </div>
+
+    <!-- Field 4 (Process Type or Organization Type) -->
+    <div class="form-row" id="field4-row" style="display:none;">
+      <label id="field4-label"></label>
+      <select id="field4"></select>
+    </div>
+
+    <!-- Field 5 (Germplasm Category or Batch Category) -->
+    <div class="form-row" id="field5-row" style="display:none;">
+      <label id="field5-label"></label>
+      <select id="field5"></select>
+    </div>
+
+    <!-- Amount -->
+    <div class="form-row">
+      <label for="amount">Amount (Rs)</label>
+      <input id="amount" readonly />
+    </div>
+
+    <!-- Total incl GST -->
+    <div class="form-row">
+      <label for="totalAmount">Total Amount Incl GST (18%)</label>
+      <input id="totalAmount" readonly />
+    </div>
+
+    <!-- User fields -->
+    <div class="form-row">
+      <label for="name">Name</label>
+      <input id="name" type="text" />
+    </div>
+    <div class="form-row">
+      <label for="mobile">Mobile Number</label>
+      <input id="mobile" type="tel" />
+    </div>
+    <div class="form-row">
+      <label for="email">Email ID</label>
+      <input id="email" type="email" />
+    </div>
+
+    <!-- Consent checkbox -->
+    <div class="consent" style="margin-top:12px;">
+      <input type="checkbox" id="consentCheckbox">
+      <label for="consentCheckbox">
+        By clicking here, you are agreeing to the terms and conditions of Easebuzz. 
+        By clicking, I consent that I have read, understood and agree to Easebuzz 
+        <a href="https://easebuzz.in/privacy/" target="_blank">Privacy Policy</a>.
+      </label>
+    </div>
+
+    <button id="payBtn" type="button" disabled>Pay Now</button>
+  </div>
+
+  <!-- Blue band at bottom -->
+  <div class="blue-band" style="margin-top:20px;"></div>
+
+  <script>
+    // Elements
+    const service = document.getElementById('service');
+    const field2Row = document.getElementById('field2-row');
+    const field2Label = document.getElementById('field2-label');
+    const field2 = document.getElementById('field2');
+
+    const field3Row = document.getElementById('field3-row');
+    const field3 = document.getElementById('field3');
+
+    const field4Row = document.getElementById('field4-row');
+    const field4Label = document.getElementById('field4-label');
+    const field4 = document.getElementById('field4');
+
+    const field5Row = document.getElementById('field5-row');
+    const field5Label = document.getElementById('field5-label');
+    const field5 = document.getElementById('field5');
+
+    const amount = document.getElementById('amount');
+    const totalAmount = document.getElementById('totalAmount');
+
+    const nameField = document.getElementById('name');
+    const mobileField = document.getElementById('mobile');
+    const emailField = document.getElementById('email');
+    const payBtn = document.getElementById('payBtn');
+    const consentCheckbox = document.getElementById('consentCheckbox');
+
+    // ----------------- RULES (all 106) -----------------
+    const rules = {
+      "1|Seeds|1|Uncharcterized":750,
+      "1|Seeds|1|Characterized/ Evaluated":1000,
+      "1|Seeds|1|Registered for Specific Trait":2500,
+      "1|Seeds|2|Uncharcterized":1000,
+      "1|Seeds|2|Characterized/ Evaluated":1250,
+      "1|Seeds|2|Registered for Specific Trait":3500,
+      "1|Seeds|3|Uncharcterized":1200,
+      "1|Seeds|3|Characterized/ Evaluated":1500,
+      "1|Seeds|3|Registered for Specific Trait":4200,
+      "1|Seeds|4|Uncharcterized":1500,
+      "1|Seeds|4|Characterized/ Evaluated":1750,
+      "1|Seeds|4|Registered for Specific Trait":5500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Uncharcterized":1000,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Characterized/ Evaluated":1500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Registered for Specific Trait":2500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Uncharcterized":1500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Characterized/ Evaluated":2000,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Registered for Specific Trait":3000,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Uncharcterized":2200,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Characterized/ Evaluated":2500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Registered for Specific Trait":4500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Uncharcterized":2500,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Characterized/ Evaluated":3000,
+      "1|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Registered for Specific Trait":5700,
+
+      "2||1|Non-Transgenic":500,
+      "2||1|Transgenic":750,
+      "2||2|Non-Transgenic":1000,
+      "2||2|Transgenic":1500,
+      "2||3|Non-Transgenic":2000,
+      "2||3|Transgenic":3000,
+      "2||4|Non-Transgenic":4000,
+      "2||4|Transgenic":6000,
+
+      "3||1|":3000,
+      "3||2|":5000,
+      "3||3|":7000,
+      "3||4|":9000,
+
+      "4|Seeds|1|Non-Transgenic":385,
+      "4|Seeds|1|Transgenic":825,
+      "4|Seeds|2|Non-Transgenic":450,
+      "4|Seeds|2|Transgenic":1000,
+      "4|Seeds|3|Non-Transgenic":550,
+      "4|Seeds|3|Transgenic":1650,
+      "4|Seeds|4|Non-Transgenic":770,
+      "4|Seeds|4|Transgenic":1925,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Non-Transgenic":385,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Transgenic":825,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Non-Transgenic":450,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Transgenic":1000,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Non-Transgenic":825,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Transgenic":1650,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Non-Transgenic":1100,
+      "4|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Transgenic":2200,
+
+      "5||1|Non-Transgenic":1100,
+      "5||1|Transgenic":1325,
+      "5||2|Non-Transgenic":1500,
+      "5||2|Transgenic":1750,
+      "5||3|Non-Transgenic":1650,
+      "5||3|Transgenic":1925,
+      "5||4|Non-Transgenic":2200,
+      "5||4|Transgenic":2420,
+
+      "6|Seeds|1|Non-Transgenic":385,
+      "6|Seeds|1|Transgenic":825,
+      "6|Seeds|2|Non-Transgenic":450,
+      "6|Seeds|2|Transgenic":1000,
+      "6|Seeds|3|Non-Transgenic":550,
+      "6|Seeds|3|Transgenic":1650,
+      "6|Seeds|4|Non-Transgenic":770,
+      "6|Seeds|4|Transgenic":1925,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Non-Transgenic":385,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|1|Transgenic":880,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Non-Transgenic":450,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|2|Transgenic":1000,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Non-Transgenic":825,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|3|Transgenic":1650,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Non-Transgenic":1100,
+      "6|Vegetative Propagules/ Tissue Culture Tube/ Plants|4|Transgenic":2420,
+
+      "7||Identification Charges per pest (Fungi, bacteria, nematodes, insects, weeds)|":1000,
+      "7||Virus Identification including grow out test per virus|":2000,
+
+      "8||1|":1000,
+      "8||2|":1500,
+      "8||3|":2000,
+      "8||4|":2500,
+
+      "9||1|":4,
+      "9||2|":8,
+      "9||3|":10,
+      "9||4|":20,
+
+      "10|DNA fingerprinting of varietal samples|1|":11000,
+      "10|DNA fingerprinting of varietal samples|2|":18000,
+      "10|DNA fingerprinting of varietal samples|3|":21000,
+      "10|DNA fingerprinting of varietal samples|4|":25000,
+      "10|GM testing of seed samples|1|":10000,
+      "10|GM testing of seed samples|2|":14000,
+      "10|GM testing of seed samples|3|":16000,
+      "10|GM testing of seed samples|4|":18000,
+
+      "11||1|":400,
+      "11||2|":600,
+      "11||3|":800,
+      "11||4|":1000,
+
+      "12||1|Per student batch of 1-25 Students":1000,
+      "12||2|Per student batch of 1-25 Students":2000,
+      "12||3|Per student batch of 1-25 Students":3000,
+      "12||4|Per student batch of 1-25 Students":4000,
+      "12||1|Per Trainee/Staff batch of 1-25 trainees/scientists/Permanent Staff":5000,
+      "12||2|Per Trainee/Staff batch of 1-25 trainees/scientists/Permanent Staff":10000,
+      "12||3|Per Trainee/Staff batch of 1-25 trainees/scientists/Permanent Staff":15000,
+      "12||4|Per Trainee/Staff batch of 1-25 trainees/scientists/Permanent Staff":20000
+    };
+
+    // ----------------- Update fields (show/hide and set options) -----------------
+    function updateFields() {
+      const f1 = service.value;
+
+      // hide all by default
+      field2Row.style.display = 'none';
+      field3Row.style.display = 'none';
+      field4Row.style.display = 'none';
+      field5Row.style.display = 'none';
+
+      // clear values
+      field2.innerHTML = '';
+      field3.value = '';
+      field4.innerHTML = '';
+      field5.innerHTML = '';
+      field2.value = '';
+      field5.value = '';
+
+      // Field 2: Germplasm Type or Testing Type
+      if (f1 === '1' || f1 === '4' || f1 === '6') {
+        field2Label.innerText = 'Germplasm Type';
+        field2.innerHTML = `<option value="">-- Select --</option>
+          <option value="Seeds">Seeds</option>
+          <option value="Vegetative Propagules/ Tissue Culture Tube/ Plants">Vegetative Propagules/ Tissue Culture Tube/ Plants</option>`;
+        field2Row.style.display = 'flex';
+      } else if (f1 === '10') {
+        field2Label.innerText = 'Testing Type';
+        field2.innerHTML = `<option value="">-- Select --</option>
+          <option value="DNA fingerprinting of varietal samples">DNA fingerprinting of varietal samples</option>
+          <option value="GM testing of seed samples">GM testing of seed samples</option>`;
+        field2Row.style.display = 'flex';
+      }
+
+      // Field 3: Nature of material (for services 2,4,5,6)
+      if (['2','4','5','6'].includes(f1)) {
+        field3Row.style.display = 'flex';
+      }
+
+      // Field 4: Process Type for 7 OR Organization Type otherwise
+      if (f1 === '7') {
+        field4Label.innerText = 'Process Type';
+        field4.innerHTML = `<option value="">-- Select --</option>
+          <option value="Identification Charges per pest (Fungi, bacteria, nematodes, insects, weeds)">Identification Charges per pest (Fungi, bacteria, nematodes, insects, weeds)</option>
+          <option value="Virus Identification including grow out test per virus">Virus Identification including grow out test per virus</option>`;
+        field4Row.style.display = 'flex';
+      } else {
+        field4Label.innerText = 'Organization Type';
+        field4.innerHTML = `<option value="">-- Select --</option>
+          <option value="1">ICAR, SAU and CAU</option>
+          <option value="2">Non-ICAR, Public Organizations/Universities</option>
+          <option value="3">International Organization</option>
+          <option value="4">Private Sector</option>`;
+        field4Row.style.display = 'flex';
+      }
+
+      // Field 5: Germplasm Category (service 1) OR Batch Category (service 12)
+      if (f1 === '1') {
+        field5Label.innerText = 'Germplasm Category';
+        field5.innerHTML = `<option value="">-- Select --</option>
+          <option value="Uncharcterized">Uncharcterized</option>
+          <option value="Characterized/ Evaluated">Characterized/ Evaluated</option>
+          <option value="Registered for Specific Trait">Registered for Specific Trait</option>`;
+        field5Row.style.display = 'flex';
+      } else if (f1 === '12') {
+        field5Label.innerText = 'Batch Category';
+        field5.innerHTML = `<option value="">-- Select --</option>
+          <option value="Per student batch of 1-25 Students">Per student batch of 1-25 Students</option>
+          <option value="Per Trainee/Staff batch of 1-25 trainees/scientists/Permanent Staff">Per Trainee/Staff batch of 1-25 trainees/scientists/Permanent Staff</option>`;
+        field5Row.style.display = 'flex';
+      }
+
+      // recalc (clears amount if incomplete)
+      calculateAmount();
+    }
+
+    // ----------------- Calculate Amount (service-aware key builder) -----------------
+    function calculateAmount() {
+      const f1 = service.value || '';
+      const f2 = field2.value || '';
+      const f3 = field3.value || '';
+      const f4 = field4.value || '';
+      const f5 = field5.value || '';
+
+      let key = '';
+
+      switch (f1) {
+        case '1':
+          // needs f2 (Germplasm Type), f4 (Org type), f5 (Germplasm Category)
+          key = `${f1}|${f2}|${f4}|${f5}`;
+          break;
+        case '2':
+          // needs f3 (Nature) + f4 (Org)
+          key = `${f1}||${f4}|${f3}`;
+          break;
+        case '3':
+          // needs only org type
+          key = `${f1}||${f4}|`;
+          break;
+        case '4':
+        case '6':
+          // needs f2 (Germplasm Type), f3 (Nature), f4 (Org)
+          key = `${f1}|${f2}|${f4}|${f3}`;
+          break;
+        case '5':
+          // needs f3 (Nature) + f4 (Org)
+          key = `${f1}||${f4}|${f3}`;
+          break;
+        case '7':
+          // needs process type in f4 (full string)
+          key = `${f1}||${f4}|`;
+          break;
+        case '8':
+        case '9':
+        case '11':
+          // needs org type
+          key = `${f1}||${f4}|`;
+          break;
+        case '10':
+          // needs testing type in f2 + org type in f4
+          key = `${f1}|${f2}|${f4}|`;
+          break;
+        case '12':
+          // needs org type (f4) + batch category (f5)
+          key = `${f1}||${f4}|${f5}`;
+          break;
+        default:
+          key = '';
+      }
+
+      const val = rules[key];
+      if (typeof val !== 'undefined' && val !== '') {
+        amount.value = Number(val).toString();
+        totalAmount.value = (Number(val) * 1.18).toFixed(2);
+      } else {
+        amount.value = '';
+        totalAmount.value = '';
+      }
+    }
+
+    // ----------------- Validation -----------------
+    function resetFieldBorders() {
+      nameField.style.border = '';
+      mobileField.style.border = '';
+      emailField.style.border = '';
+    }
+
+    function validateUserFields() {
+      resetFieldBorders();
+
+      const name = nameField.value.trim();
+      const mobileRaw = mobileField.value || '';
+      const mobileDigits = mobileRaw.replace(/\D/g, ''); // only digits
+      const email = emailField.value.trim();
+
+      if (!name) {
+        alert("Name is mandatory.");
+        nameField.style.border = '2px solid red';
+        nameField.focus();
+        return false;
+      }
+
+      if (mobileDigits.length < 10) {
+        alert("Please enter a valid Mobile Number (minimum 10 digits).");
+        mobileField.style.border = '2px solid red';
+        mobileField.focus();
+        return false;
+      }
+
+      // basic email pattern
+      const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!emailPattern.test(email)) {
+        alert("Please enter a valid Email address.");
+        emailField.style.border = '2px solid red';
+        emailField.focus();
+        return false;
+      }
+
+      return true;
+    }
+
+    // ----------------- Events -----------------
+    service.addEventListener('change', updateFields);
+    field2.addEventListener('change', calculateAmount);
+    field3.addEventListener('change', calculateAmount);
+    field4.addEventListener('change', calculateAmount);
+    field5.addEventListener('change', calculateAmount);
+
+    consentCheckbox.addEventListener('change', function() {
+      payBtn.disabled = !this.checked;
+    });
+
+    payBtn.addEventListener('click', () => {
+      // validate required user fields
+      if (!validateUserFields()) return;
+
+      // ensure amount is populated
+      if (!amount.value) {
+        alert('Amount is not set. Please complete the form selections to calculate the amount before paying.');
+        return;
+      }
+
+      // proceed (placeholder)
+      alert('Proceeding to payment:\nAmount: Rs ' + amount.value + '\nTotal incl. GST: Rs ' + totalAmount.value);
+    });
+
+    // initialize (hide/clear)
+    updateFields();
+  </script>
+</body>
+</html>
